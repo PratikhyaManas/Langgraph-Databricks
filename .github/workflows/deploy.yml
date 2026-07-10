@@ -1,0 +1,87 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]      # -> dev
+  release:
+    types: [published]    # -> prod (promotes the exact version tested in dev)
+
+jobs:
+  deploy-dev:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      ENDPOINT_NAME: sql-workflow-agent-dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate bundle
+        run: databricks bundle validate -t dev
+
+      - name: Deploy bundle
+        run: databricks bundle deploy -t dev
+
+      - name: Register model + update endpoint
+        run: databricks bundle run deploy_agent -t dev
+
+      - name: Set up Python for integration test
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install test dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Integration test against live dev endpoint
+        run: pytest tests/test_endpoint_integration.py -v
+
+  promote-prod:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    environment: prod   # add required reviewers in GitHub environment settings for manual approval
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Deploy bundle (creates prod job resources, no model change yet)
+        run: databricks bundle deploy -t prod
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Promote already-tested dev model version into prod catalog
+        run: |
+          python deploy/promote_model.py \
+            --source-model dev_catalog.gold.sql_workflow_agent \
+            --source-alias champion \
+            --target-model prod_catalog.gold.sql_workflow_agent \
+            --target-alias champion
+
+      - name: Update prod endpoint to serve promoted version
+        env:
+          CATALOG_NAME: prod_catalog
+          SCHEMA_NAME: gold
+          ENDPOINT_NAME: sql-workflow-agent-prod
+          FOUNDATION_MODEL_NAME: databricks-meta-llama-3-1-70b-instruct
+          EXPERIMENT_ID: ${{ vars.PROD_EXPERIMENT_ID }}
+        run: python deploy/create_or_update_endpoint.py

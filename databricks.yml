@@ -1,0 +1,87 @@
+bundle:
+  name: langgraph-sql-agent
+
+variables:
+  catalog_name:
+    description: Unity Catalog catalog to register the model in
+    default: dev_catalog
+  schema_name:
+    description: Schema (within catalog_name) to register the model in
+    default: gold
+  experiment_id:
+    description: MLflow experiment ID to log runs under
+    default: ""
+  foundation_model_name:
+    description: Databricks foundation model serving endpoint used as the LLM
+    default: databricks-meta-llama-3-1-70b-instruct
+  endpoint_name:
+    description: Name of the Model Serving endpoint this agent is deployed to
+    default: sql-workflow-agent-dev
+  model_alias:
+    description: Unity Catalog model alias moved on each successful deploy
+    default: champion
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://<dev-workspace>.azuredatabricks.net
+    variables:
+      catalog_name: dev_catalog
+      endpoint_name: sql-workflow-agent-dev
+
+  staging:
+    mode: production
+    workspace:
+      host: https://<staging-workspace>.azuredatabricks.net
+    variables:
+      catalog_name: staging_catalog
+      endpoint_name: sql-workflow-agent-staging
+
+  prod:
+    mode: production
+    workspace:
+      host: https://<prod-workspace>.azuredatabricks.net
+    variables:
+      catalog_name: prod_catalog
+      endpoint_name: sql-workflow-agent-prod
+
+resources:
+  jobs:
+    deploy_agent:
+      name: deploy-langgraph-sql-agent-${bundle.target}
+      tasks:
+        - task_key: log_and_register_model
+          spark_python_task:
+            python_file: ../deploy/log_and_register_model.py
+            parameters:
+              - "--catalog"
+              - "${var.catalog_name}"
+              - "--endpoint"
+              - "${var.endpoint_name}"
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            node_type_id: "Standard_DS3_v2"
+            num_workers: 0
+            spark_conf:
+              spark.databricks.cluster.profile: "singleNode"
+          environment_key: default
+        - task_key: create_or_update_endpoint
+          depends_on:
+            - task_key: log_and_register_model
+          spark_python_task:
+            python_file: ../deploy/create_or_update_endpoint.py
+          new_cluster:
+            spark_version: "15.4.x-scala2.12"
+            node_type_id: "Standard_DS3_v2"
+            num_workers: 0
+            spark_conf:
+              spark.databricks.cluster.profile: "singleNode"
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            client: "1"
+            dependencies:
+              - -r ../requirements.txt
