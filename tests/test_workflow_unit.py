@@ -61,7 +61,7 @@ def test_sql_generation_failure_routes_to_error_node():
     )
 
     assert result["error"].startswith("sql_generation_failed")
-    assert result["final_answer"].startswith("sql_generation_failed")
+    assert result["final_answer"].startswith("Sorry, something went wrong:")
 
 
 def test_sql_execution_failure_is_captured():

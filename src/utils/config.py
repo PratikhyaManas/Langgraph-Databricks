@@ -37,9 +37,11 @@ class AgentConfig:
         return f"{self.catalog_name}.{self.schema_name}.{self.registered_model_name}"
 
     def validate(self) -> None:
-        if any("." in part for part in (self.catalog_name, self.schema_name, self.registered_model_name)):
+        names = (self.catalog_name, self.schema_name, self.registered_model_name)
+        if any("." in part for part in names):
             raise ValueError(
-                "CATALOG_NAME, SCHEMA_NAME and REGISTERED_MODEL_NAME must be simple names without dots"
+                "CATALOG_NAME, SCHEMA_NAME and REGISTERED_MODEL_NAME must be "
+                "simple names without dots"
             )
         if not self.alias.strip():
             raise ValueError("MODEL_ALIAS cannot be empty")
