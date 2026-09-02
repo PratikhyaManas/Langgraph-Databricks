@@ -30,16 +30,29 @@ class AgentConfig:
     endpoint_name: str
     registered_model_name: str
     alias: str = "champion"
+    sql_context_tables: tuple[str, ...] = ()
 
     @property
     def full_model_name(self) -> str:
         return f"{self.catalog_name}.{self.schema_name}.{self.registered_model_name}"
 
+    def validate(self) -> None:
+        if any("." in part for part in (self.catalog_name, self.schema_name, self.registered_model_name)):
+            raise ValueError(
+                "CATALOG_NAME, SCHEMA_NAME and REGISTERED_MODEL_NAME must be simple names without dots"
+            )
+        if not self.alias.strip():
+            raise ValueError("MODEL_ALIAS cannot be empty")
+
     @classmethod
     def from_env(cls) -> "AgentConfig":
         catalog_name = _require("CATALOG_NAME")
         schema_name = _require("SCHEMA_NAME", "default")
-        return cls(
+        sql_context_tables_raw = os.environ.get("SQL_CONTEXT_TABLES", "")
+        sql_context_tables = tuple(
+            t.strip() for t in sql_context_tables_raw.split(",") if t.strip()
+        )
+        cfg = cls(
             catalog_name=catalog_name,
             schema_name=schema_name,
             experiment_id=_require("EXPERIMENT_ID"),
@@ -51,4 +64,7 @@ class AgentConfig:
                 "REGISTERED_MODEL_NAME", "sql_workflow_agent"
             ),
             alias=os.environ.get("MODEL_ALIAS", "champion"),
+            sql_context_tables=sql_context_tables,
         )
+        cfg.validate()
+        return cfg

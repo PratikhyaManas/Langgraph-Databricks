@@ -10,13 +10,16 @@ class SQLWorkflowState(TypedDict):
     """State threaded through every node in the graph."""
 
     # Full chat history, using LangGraph's built-in message reducer.
-    messages: Annotated[list, add_messages]
+    messages: Annotated[list[Any], add_messages]
 
     # The natural-language question extracted from the latest user message.
     question: Optional[str]
 
     # SQL generated for the question.
     generated_sql: Optional[str]
+
+    # Optional schema context injected into SQL generation prompts.
+    schema_context: Optional[str]
 
     # Result of executing generated_sql (list of row dicts, or an error string).
     query_result: Optional[Any]

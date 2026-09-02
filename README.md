@@ -56,10 +56,103 @@ one file that only runs interactively. Here:
 
 ## Local setup
 
+### 1) Create and activate a virtual environment
+
+Windows (PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+macOS/Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 2) Install dependencies
+
 ```bash
 uv sync
-cp .env.example .env   # fill in catalog/schema/endpoint/model values
-uv run pytest tests/test_workflow_unit.py -v
+```
+
+### 3) Create local environment file
+
+Windows (PowerShell):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Then update `.env` with your values (catalog/schema/endpoint/model, etc.).
+
+### 4) Run tests
+
+```bash
+uv run pytest -q
+```
+
+## Quick start (Databricks Bundle)
+
+After local setup, these are the minimum commands to deploy the agent to `dev`:
+
+```bash
+databricks auth login --host https://<your-workspace>.azuredatabricks.net
+databricks bundle validate -t dev
+databricks bundle deploy -t dev
+databricks bundle run deploy_agent -t dev
+```
+
+Tip: keep `targets.dev.workspace.host` in `databricks.yml` aligned with the same workspace URL you use for `databricks auth login`.
+
+## Rollback / promote runbook
+
+### Promote the tested dev model to staging/prod
+
+Use the promotion script to copy the exact version currently behind `champion` in dev:
+
+```bash
+export SOURCE_MODEL="${SOURCE_CATALOG}.${SOURCE_SCHEMA}.${REGISTERED_MODEL_NAME}"
+export TARGET_MODEL="${TARGET_CATALOG}.${TARGET_SCHEMA}.${REGISTERED_MODEL_NAME}"
+export MODEL_ALIAS="champion"
+
+python deploy/promote_model.py \
+  --source-model "$SOURCE_MODEL" \
+  --source-alias "$MODEL_ALIAS" \
+  --target-model "$TARGET_MODEL" \
+  --target-alias "$MODEL_ALIAS"
+```
+
+For PowerShell:
+
+```powershell
+$env:SOURCE_MODEL = "$env:SOURCE_CATALOG.$env:SOURCE_SCHEMA.$env:REGISTERED_MODEL_NAME"
+$env:TARGET_MODEL = "$env:TARGET_CATALOG.$env:TARGET_SCHEMA.$env:REGISTERED_MODEL_NAME"
+$env:MODEL_ALIAS = "champion"
+
+python deploy/promote_model.py --source-model $env:SOURCE_MODEL --source-alias $env:MODEL_ALIAS --target-model $env:TARGET_MODEL --target-alias $env:MODEL_ALIAS
+```
+
+### Roll back alias quickly
+
+If a bad version is promoted, point the alias back to a known good version:
+
+```bash
+python -c "import os, mlflow; mlflow.set_registry_uri('databricks-uc'); c=mlflow.MlflowClient(); c.set_registered_model_alias(name=os.environ['TARGET_MODEL'], alias=os.environ.get('MODEL_ALIAS','champion'), version=os.environ['ROLLBACK_VERSION'])"
+```
+
+After alias changes, refresh the serving endpoint config so it picks up the currently aliased model:
+
+```bash
+python deploy/create_or_update_endpoint.py
 ```
 
 ## Deploying by hand (before wiring CI/CD secrets)
@@ -94,3 +187,8 @@ All environment-specific values (catalog, schema, endpoint name, foundation
 model) live in `databricks.yml` under `targets.<env>.variables`, not hardcoded
 in Python. `src/utils/config.py` reads them from environment variables that
 the bundle job injects at runtime.
+
+Optional SQL safety env vars:
+
+- `SQL_CONTEXT_TABLES`: comma-separated tables used to build schema context for prompt grounding.
+- `SQL_ALLOWED_TABLES`: comma-separated allowlist of fully qualified tables permitted in generated SQL (enforced against `FROM`/`JOIN` references).
