@@ -8,12 +8,13 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install -r ../requirements.txt
+# MAGIC %pip install ../
 # MAGIC dbutils.library.restartPython()
 
 # COMMAND ----------
 
 import sys
+
 sys.path.insert(0, "..")
 
 from langchain_community.chat_models import ChatDatabricks

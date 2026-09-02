@@ -31,8 +31,8 @@ automated deploy pipelines.
 ├── tests/
 │   ├── test_workflow_unit.py          # Local tests, no Databricks connection needed
 │   └── test_endpoint_integration.py   # Hits the live serving endpoint after deploy
-├── requirements.txt
-├── requirements-dev.txt
+├── pyproject.toml                     # Runtime and development dependencies
+├── uv.lock                            # Reproducible dependency lockfile
 ├── .env.example
 └── .github/workflows/
     ├── ci.yml                         # Lint + unit tests on every PR
@@ -57,10 +57,9 @@ one file that only runs interactively. Here:
 ## Local setup
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt -r requirements-dev.txt
+uv sync
 cp .env.example .env   # fill in catalog/schema/endpoint/model values
-pytest tests/test_workflow_unit.py -v
+uv run pytest tests/test_workflow_unit.py -v
 ```
 
 ## Deploying by hand (before wiring CI/CD secrets)

@@ -23,13 +23,6 @@ class FakeLLM:
         return SimpleNamespace(content=next(self._responses))
 
 
-class FakeHumanMessage:
-    type = "human"
-
-    def __init__(self, content: str):
-        self.content = content
-
-
 @pytest.fixture
 def fake_rows():
     return [{"customer": "Acme", "revenue": 100000}]
@@ -46,7 +39,7 @@ def test_happy_path(fake_rows):
 
     with patch("src.agent.nodes.run_sql", return_value=fake_rows):
         result = graph.invoke(
-            {"messages": [FakeHumanMessage("Who is my top customer by revenue?")]}
+            {"messages": [{"role": "user", "content": "Who is my top customer by revenue?"}]}
         )
 
     assert result["generated_sql"].upper().startswith("SELECT")
@@ -62,7 +55,7 @@ def test_sql_generation_failure_routes_to_error_node():
 
     graph = build_graph(RaisingLLM())
     result = graph.invoke(
-        {"messages": [FakeHumanMessage("Who is my top customer?")]}
+        {"messages": [{"role": "user", "content": "Who is my top customer?"}]}
     )
 
     assert result["error"].startswith("sql_generation_failed")
@@ -77,7 +70,7 @@ def test_sql_execution_failure_is_captured():
         "src.agent.nodes.run_sql", side_effect=RuntimeError("table not found")
     ):
         result = graph.invoke(
-            {"messages": [FakeHumanMessage("Show me a nonexistent table")]}
+            {"messages": [{"role": "user", "content": "Show me a nonexistent table"}]}
         )
 
     assert result["error"].startswith("sql_execution_failed")

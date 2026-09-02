@@ -51,7 +51,13 @@ def main() -> None:
             python_model="src/agent/responses_agent.py",
             artifact_path="agent",
             signature=signature,
-            pip_requirements="requirements.txt",
+            pip_requirements=[
+                "databricks-sdk>=0.30.0",
+                "databricks-sql-connector>=3.4.0",
+                "langchain-community>=0.3.0",
+                "langgraph>=1.0.0,<2.0.0",
+                "mlflow>=2.17.0",
+            ],
         )
         logger.info("Logged model: %s", logged_model.model_uri)
 

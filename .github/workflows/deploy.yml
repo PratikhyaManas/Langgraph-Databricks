@@ -35,13 +35,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install test dependencies
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: uv sync --locked
 
       - name: Integration test against live dev endpoint
-        run: pytest tests/test_endpoint_integration.py -v
+        run: uv run pytest tests/test_endpoint_integration.py -v
 
   promote-prod:
     if: github.event_name == 'release'
@@ -64,10 +66,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync --locked --no-dev
 
       - name: Promote already-tested dev model version into prod catalog
         run: |

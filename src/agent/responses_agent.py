@@ -7,8 +7,6 @@ deploy/log_and_register_model.py.
 """
 from __future__ import annotations
 
-from typing import Any
-
 import mlflow
 from langchain_community.chat_models import ChatDatabricks
 from mlflow.pyfunc import ResponsesAgent

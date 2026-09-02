@@ -18,8 +18,6 @@ def get_table_schema(catalog: str, schema: str, table: str) -> str:
     In a real deployment this queries information_schema via the Databricks
     SQL connector / Spark session available inside the serving container.
     """
-    from databricks import sql as databricks_sql  # local import: only needed at runtime
-
     query = f"""
         SELECT column_name, data_type
         FROM {catalog}.information_schema.columns

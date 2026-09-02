@@ -17,14 +17,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt -r requirements-dev.txt
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Sync dependencies
+        run: uv sync --locked
 
       - name: Lint
-        run: ruff check .
+        run: uv run ruff check .
 
       - name: Unit tests (no Databricks connection required)
-        run: pytest tests/test_workflow_unit.py -v
+        run: uv run pytest tests/test_workflow_unit.py -v

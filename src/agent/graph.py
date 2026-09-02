@@ -5,8 +5,13 @@ from functools import partial
 
 from langgraph.graph import END, StateGraph
 
-from src.agent.state import SQLWorkflowState
 from src.agent import nodes
+from src.agent.state import SQLWorkflowState
+
+
+def format_error(state: SQLWorkflowState) -> dict[str, str]:
+    """Return a consistent user-facing response for workflow failures."""
+    return {"final_answer": f"Sorry, something went wrong: {state.get('error')}"}
 
 
 def build_graph(llm):
@@ -23,7 +28,7 @@ def build_graph(llm):
     graph.add_node("generate_sql", partial(nodes.generate_sql, llm=llm))
     graph.add_node("execute_sql", nodes.execute_sql)
     graph.add_node("summarize_result", partial(nodes.summarize_result, llm=llm))
-    graph.add_node("error", lambda state: {"final_answer": state.get("error")})
+    graph.add_node("error", format_error)
 
     graph.set_entry_point("extract_question")
     graph.add_edge("extract_question", "generate_sql")
