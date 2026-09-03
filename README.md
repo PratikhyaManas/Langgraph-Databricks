@@ -1,10 +1,24 @@
 # langgraph-databricks-cicd
 
-A modular, CI/CD-ready version of a LangGraph SQL workflow agent deployed to
-Databricks Model Serving via MLflow + Unity Catalog. Based on the pattern in
-[LanggraphInDatabricks](https://github.com/PragatiGupta97/LanggraphInDatabricks),
-restructured out of a single notebook into a proper Python package with
-automated deploy pipelines.
+A modular, CI/CD-ready LangGraph SQL workflow agent for Databricks,
+built with MLflow + Unity Catalog model serving,
+restructured from a single notebook into a proper Python package with
+automated deployment pipelines.
+
+## Architecture
+
+![LangGraph Databricks architecture](assets/architecture.svg)
+
+This system routes user requests through a LangGraph agent hosted in Databricks,
+which uses tool calls to query SQL warehouses and read governed data from Unity
+Catalog. The model serving layer exposes the agent as a deployed endpoint, while
+CI/CD scripts package, register, and promote the model across environments.
+
+- **User / Client** sends a prompt to the served app
+- **Databricks Model Serving** hosts the LangGraph workflow
+- **Agent Tools** execute SQL and metadata lookups against warehouse data
+- **Unity Catalog** provides governed access to tables, schemas, and views
+- **MLflow + deployment automation** handles model logging, registration, and promotion
 
 ## Structure
 
