@@ -36,46 +36,44 @@
   <rect width="980" height="520" fill="url(#bg)"/>
   <text x="490" y="54" text-anchor="middle" class="title">LangGraph + Databricks Architecture</text>
 
-  <rect x="60" y="110" width="150" height="100" rx="18" fill="#FFFFFF" class="outer"/>
-  <text x="135" y="150" text-anchor="middle" class="label">User / Client</text>
-  <text x="135" y="176" text-anchor="middle" class="small">Requests</text>
+  <rect x="60" y="150" width="150" height="100" rx="18" fill="#FFFFFF" class="outer"/>
+  <text x="135" y="192" text-anchor="middle" class="label">User / Client</text>
+  <text x="135" y="216" text-anchor="middle" class="small">Requests</text>
 
-  <rect x="290" y="90" width="220" height="140" rx="20" fill="url(#panel)" class="box"/>
-  <text x="400" y="130" text-anchor="middle" class="label">Databricks</text>
-  <text x="400" y="158" text-anchor="middle" class="small">Model Serving / App Runtime</text>
-  <text x="400" y="184" text-anchor="middle" class="small">LangGraph agent</text>
+  <rect x="270" y="120" width="220" height="140" rx="20" fill="url(#panel)" class="box"/>
+  <text x="380" y="162" text-anchor="middle" class="label">Databricks</text>
+  <text x="380" y="188" text-anchor="middle" class="small">Model Serving / App Runtime</text>
+  <text x="380" y="214" text-anchor="middle" class="small">LangGraph agent</text>
 
-  <rect x="600" y="90" width="230" height="140" rx="20" fill="url(#agent)" class="box"/>
-  <text x="715" y="130" text-anchor="middle" class="label">Agent Tools</text>
-  <text x="715" y="158" text-anchor="middle" class="small">SQL queries</text>
-  <text x="715" y="184" text-anchor="middle" class="small">Catalog metadata</text>
+  <rect x="560" y="120" width="220" height="140" rx="20" fill="url(#agent)" class="box"/>
+  <text x="670" y="162" text-anchor="middle" class="label">Agent Tools</text>
+  <text x="670" y="188" text-anchor="middle" class="small">SQL queries</text>
+  <text x="670" y="214" text-anchor="middle" class="small">Catalog metadata</text>
 
-  <rect x="320" y="300" width="260" height="115" rx="20" fill="url(#data)" class="box"/>
-  <text x="450" y="338" text-anchor="middle" class="label">Unity Catalog</text>
-  <text x="450" y="364" text-anchor="middle" class="small">Schemas / Tables / Views</text>
-  <text x="450" y="390" text-anchor="middle" class="small">Governed data access</text>
+  <rect x="270" y="320" width="220" height="110" rx="20" fill="url(#data)" class="box"/>
+  <text x="380" y="356" text-anchor="middle" class="label">Unity Catalog</text>
+  <text x="380" y="380" text-anchor="middle" class="small">Schemas / Tables / Views</text>
+  <text x="380" y="402" text-anchor="middle" class="small">Governed access</text>
 
-  <rect x="660" y="300" width="200" height="115" rx="20" fill="#F8FAFC" class="box"/>
-  <text x="760" y="338" text-anchor="middle" class="label">SQL Warehouse</text>
-  <text x="760" y="364" text-anchor="middle" class="small">Execution engine</text>
-  <text x="760" y="390" text-anchor="middle" class="small">Query + analytics</text>
+  <rect x="560" y="320" width="220" height="110" rx="20" fill="#F8FAFC" class="box"/>
+  <text x="670" y="356" text-anchor="middle" class="label">SQL Warehouse</text>
+  <text x="670" y="380" text-anchor="middle" class="small">Execution engine</text>
+  <text x="670" y="402" text-anchor="middle" class="small">Query + analytics</text>
 
-  <path d="M210 160 H290" class="arrow"/>
-  <path d="M510 160 H600" class="arrow"/>
-  <path d="M715 230 V300" class="arrow"/>
-  <path d="M580 360 H660" class="arrow"/>
-  <path d="M400 230 V300" class="dashed"/>
+  <rect x="110" y="320" width="120" height="60" rx="12" fill="#FFFFFF" class="outer"/>
+  <text x="170" y="357" text-anchor="middle" class="small">MLflow</text>
 
-  <text x="245" y="147" class="small">HTTP / API</text>
-  <text x="545" y="147" class="small">Tool calls</text>
-  <text x="725" y="270" class="small">Workflow</text>
-  <text x="620" y="346" class="small">Query</text>
-  <text x="410" y="280" class="small">Data plane</text>
+  <path d="M210 200 H270" class="arrow"/>
+  <path d="M490 190 H560" class="arrow"/>
+  <path d="M380 260 V320" class="dashed"/>
+  <path d="M670 260 V320" class="arrow"/>
+  <path d="M490 375 H560" class="arrow"/>
+  <path d="M230 350 H270" class="arrow"/>
 
-  <g>
-    <rect x="100" y="260" width="120" height="60" rx="12" fill="#FFFFFF" class="outer"/>
-    <text x="160" y="297" text-anchor="middle" class="small">MLflow</text>
-  </g>
-  <path d="M220 290 H320" class="arrow"/>
-  <text x="250" y="280" class="small">Model</text>
+  <text x="226" y="185" class="small">HTTP / API</text>
+  <text x="505" y="175" class="small">Tool calls</text>
+  <text x="392" y="290" class="small">Data plane</text>
+  <text x="690" y="290" class="small">Workflow</text>
+  <text x="520" y="362" class="small">Query</text>
+  <text x="252" y="338" class="small">Model</text>
 </svg>
