@@ -7,7 +7,34 @@ automated deployment pipelines.
 
 ## Architecture
 
-![LangGraph Databricks architecture](assets/architecture.svg)
+```mermaid
+flowchart LR
+    U[User / Client] -->|HTTP / API| D[Databricks<br/>Model Serving Endpoint<br/>LangGraph Agent]
+
+    D -->|Prompt + orchestration| G[LangGraph Graph<br/>State / Nodes / Tools]
+    G -->|Tool calls| T[Agent Tools<br/>SQL Queries<br/>Catalog Metadata]
+    G -->|Version / track| M[MLflow<br/>Model Registry]
+
+    T -->|Query execution| W[SQL Warehouse<br/>Execution Engine]
+    T -->|Governed access| C[Unity Catalog<br/>Schemas / Tables / Views]
+    W -->|Read / analyze| C
+    C -->|Secure data access| D
+
+    M -->|Register + promote| P[CI / CD Deploy Pipeline<br/>Databricks Bundle + Model Promotion]
+    P -->|Deploy / update| D
+```
+
+```mermaid
+flowchart TD
+    A[Developer Commit] --> B[GitHub Actions / CI]
+    B --> C[Run unit tests + lint]
+    C --> D[Databricks Bundle Validate]
+    D --> E[Log model to MLflow]
+    E --> F[Register model in Unity Catalog]
+    F --> G[Promote version to champion / prod]
+    G --> H[Update serving endpoint]
+    H --> I[Live LangGraph SQL agent]
+```
 
 This system routes user requests through a LangGraph agent hosted in Databricks,
 which uses tool calls to query SQL warehouses and read governed data from Unity
@@ -16,9 +43,11 @@ CI/CD scripts package, register, and promote the model across environments.
 
 - **User / Client** sends a prompt to the served app
 - **Databricks Model Serving** hosts the LangGraph workflow
+- **LangGraph Graph** orchestrates state, tool execution, and response generation
 - **Agent Tools** execute SQL and metadata lookups against warehouse data
 - **Unity Catalog** provides governed access to tables, schemas, and views
 - **MLflow + deployment automation** handles model logging, registration, and promotion
+- **Databricks Asset Bundle** manages environment-specific deployment config
 
 ## Structure
 
